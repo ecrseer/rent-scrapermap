@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import { Listing } from './types/listing';
+import { HumanBrowser } from './human-browser/human-browser';
 
 @Injectable()
 export class AppService {
@@ -12,92 +13,109 @@ export class AppService {
 
   private readonly TIMEOUT = 4200;
   private readonly LESS_TIMEOUT = 1200;
+  private readonly MIN_DELAY = 1000;
+  private readonly MAX_DELAY = 3000;
 
   onModuleInit() {
     this.scrapeListings();
   }
 
   async scrapeListings(): Promise<Listing[]> {
-    const browser = await this.initializeBrowser();
+    const webb = {
+      human: null,
+    };
     try {
-      const page = await browser.newPage();
-      await this.setupPage(page);
+      webb.human = await new HumanBrowser().build();
+      const page = webb.human.page;
+      //axios.get('https://www.olx.com.br/_next/data/q7pRHJTQsEaIf01gNeuyy/pt-BR/imoveis/aluguel/estado-rj/rio-de-janeiro-e-regiao/zona-norte.json?route=aluguel&route=estado-rj&route=rio-de-janeiro-e-regiao&route=zona-norte')
 
       const links = await this.extractListingLinks(page);
-      const listings = await this.processListings(page, links);
-
+      await webb.human.browser.close();
+      const listings = await this.processListings(links);
+      console.log('🚀 ~ file: app.service.ts:35 ~ listings:', listings);
       return listings;
     } catch (error) {
       console.error('Error scraping listings:', error);
       return [];
     } finally {
-      await browser.close();
+      await webb.human.browser.close();
     }
-  }
-
-  private async initializeBrowser(): Promise<puppeteer.Browser> {
-    return puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
-  }
-
-  private async setupPage(page: puppeteer.Page): Promise<void> {
-    await page.setViewport({ width: 1366, height: 768 });
-    await page.setUserAgent(
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    );
-    await page.goto(
-      'https://www.olx.com.br/imoveis/aluguel/estado-rj/rio-de-janeiro-e-regiao/zona-norte',
-      {
-        waitUntil: 'networkidle0',
-      },
-    );
-    await page.waitForSelector(this.SELECTORS.LISTING_LINK, { timeout: this.TIMEOUT });
   }
 
   private async extractListingLinks(page: puppeteer.Page): Promise<string[]> {
-    return page.evaluate(selector => {
-      const items = document.querySelectorAll(selector);
-      return Array.from(items)
-        .map(item => item.getAttribute('href'))
-        .filter((href): href is string => href !== null);
-    }, this.SELECTORS.LISTING_LINK);
+    const hrefs = await page.$$eval(this.SELECTORS.LISTING_LINK, el =>
+      el.map(el => el.getAttribute('href')),
+    );
+    const links = new Set(hrefs);
+
+    return [...links];
   }
 
-  private async processListings(page: puppeteer.Page, links: string[]): Promise<Listing[]> {
+  private async processListings(links: string[]): Promise<Listing[]> {
     const listings: Listing[] = [];
 
-    for (const link of links.slice(0,2)) {
-      try {
-        const listing = await this.extractListingDetails(page, link);
-        console.log('🚀 ~ file: app.service.ts:68 ~ listing:', listing);
+    const webb = {
+      human: null,
+    };
+    try {
+      for (const link of links.reverse()) {
+        await this.randomDelay();
+        webb.human = await new HumanBrowser().build();
+
+        const newPage = webb.human.page;
+        await newPage.goto(link, {
+          waitUntil: 'networkidle2',
+          timeout: 30000,
+        });
+        await this.randomDelay();
+
+        const listing = await this.extractListingDetails(newPage, link);
         if (listing.zipCode) {
           listings.push(listing);
         }
-      } catch (error) {
-        console.error(`Error processing listing ${link}:`, error);
+
+        await webb.human.browser.close();
       }
+    } catch (err) {
+      console.log('processListings ~ err:', err);
+      await webb.human.browser.close();
     }
 
-    console.log("🚀 ~ file: app.service.ts:84 ~ listings:", listings)
     return listings;
   }
 
   private async extractListingDetails(page: puppeteer.Page, link: string): Promise<any> {
-    await page.goto(link, { waitUntil: 'networkidle0' });
-    await this.scrollDown(page);
-
-    let rentVal = 'None';
     try {
+      // Simulate human-like behavior
+      await this.randomDelay();
+      await this.simulateHumanBehavior(page);
+
       const address = await this.getElementText(page, this.SELECTORS.ADDRESS);
-      console.log("🚀 ~ file: app.service.ts:94 ~ address:", address)
+      console.log('🚀 ~ file: app.service.ts:94 ~ address:', address);
       const zipCode = address.replace(/\D/g, '');
-      rentVal = await this.getElementText(page, this.SELECTORS.PRICE);
+      const rentVal = await this.getElementText(page, this.SELECTORS.PRICE);
       return { zipCode, rentVal, link };
-    } catch (err){
-      console.log("tractListingDetails ~ err:", err)
+    } catch (err) {
+      console.log('extractListingDetails ~ err:', err);
+      return { zipCode: '', rentVal: '', link };
     }
+  }
+
+  private async randomDelay(): Promise<void> {
+    const delay = Math.floor(
+      Math.random() * (this.MAX_DELAY - this.MIN_DELAY + 1) + this.MIN_DELAY,
+    );
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+
+  private async simulateHumanBehavior(page: puppeteer.Page): Promise<void> {
+    // Random scroll
+    await page.evaluate(() => {
+      const scrollHeight = Math.floor(Math.random() * 100);
+      window.scrollBy(0, scrollHeight);
+    });
+    await this.randomDelay();
+    await this.scrollDown(page);
   }
 
   private async scrollDown(page: puppeteer.Page) {
