@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import { Listing } from './types/listing';
 import { HumanBrowser } from './human-browser/human-browser';
+import { zipsListings } from './logs/sample';
+import { getZipToLatStrategy } from './zipcode-to-lat-lon/izipcode-to-lat-lon';
 
 @Injectable()
 export class AppService {
@@ -16,8 +18,12 @@ export class AppService {
   private readonly MIN_DELAY = 1000;
   private readonly MAX_DELAY = 3000;
 
-  onModuleInit() {
-    this.scrapeListings();
+  async onModuleInit() {
+    const scraped = zipsListings;
+    const strategy = getZipToLatStrategy();
+    strategy.cepToLatLng(scraped[0].zipCode).then(res => {
+      console.log('🚀 ~ file: app.service.ts:26 ~ onModuleInit ~ res:', res);
+    });
   }
 
   async scrapeListings(): Promise<Listing[]> {
@@ -27,7 +33,6 @@ export class AppService {
     try {
       webb.human = await new HumanBrowser().build();
       const page = webb.human.page;
-      //axios.get('https://www.olx.com.br/_next/data/q7pRHJTQsEaIf01gNeuyy/pt-BR/imoveis/aluguel/estado-rj/rio-de-janeiro-e-regiao/zona-norte.json?route=aluguel&route=estado-rj&route=rio-de-janeiro-e-regiao&route=zona-norte')
 
       const links = await this.extractListingLinks(page);
       await webb.human.browser.close();
@@ -70,6 +75,7 @@ export class AppService {
         await this.randomDelay();
 
         const listing = await this.extractListingDetails(newPage, link);
+        console.log('🚀 ~ file: app.service.ts:73 ~ listing:', listing);
         if (listing.zipCode) {
           listings.push(listing);
         }
@@ -86,7 +92,6 @@ export class AppService {
 
   private async extractListingDetails(page: puppeteer.Page, link: string): Promise<any> {
     try {
-      // Simulate human-like behavior
       await this.randomDelay();
       await this.simulateHumanBehavior(page);
 
