@@ -18,13 +18,23 @@ import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import 'leaflet/dist/leaflet.css'
 
+type Listing = {
+  title: string
+  price: string
+  zipCode: string
+  link: string
+  latitude?: number
+  longitude?: number
+}
+
 const { initMap, addMarker, clearMarkers } = useMap()
-const listings = ref([])
+const listings = ref<Listing[]>([])
 
 const fetchListings = async () => {
   try {
-    const response = await axios.get('http://localhost:3001/api/listings')
-    listings.value = response.data
+    const response = await axios.get('http://localhost:4242/api/zona-norte')
+    listings.value = response.data as Listing[]
+    console.log("🚀 ~ file: index.vue:37 ~ response.data:", response.data)
 
     // Add markers for each listing with ZIP code
     clearMarkers()

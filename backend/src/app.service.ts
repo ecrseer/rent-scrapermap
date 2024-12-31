@@ -21,14 +21,19 @@ export class AppService {
   private readonly MAX_DELAY = 3000;
 
   async onModuleInit() {
+    // this.scrapeListings();
+  }
+
+  async getMapZonaNorte() {
     const scraped = zipsListings;
     const strategy = getZipToLatStrategy();
-    this.scrapeListings();
-    // strategy
-    //   .cepToLatLng({ zipCode: scraped[0].zipCode, geoState: 'Rio de Janeiro', country: 'Brazil' })
-    //   .then(res => {
-    //     console.log('🚀 ~ file: app.service.ts:26 ~ onModuleInit ~ res:', res);
-    //   });
+    const latlong = await strategy.cepToLatLng(
+      `Rua Gonzaga de Campos, Todos os Santos, Rio de Janeiro, RJ, 20770140`,
+    );
+    return [latlong].map(ll => ({
+      latitude: ll.lat,
+      longitude: ll.lng,
+    }));
   }
 
   async scrapeListings(): Promise<Listing[]> {

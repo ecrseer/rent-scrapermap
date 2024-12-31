@@ -10,4 +10,9 @@ export class AppController {
   async getListings(): Promise<Listing[]> {
     return this.appService.scrapeListings();
   }
+
+  @Get('zona-norte')
+  async getZonaNorte(): Promise<any> {
+    return this.appService.getMapZonaNorte();
+  }
 }
