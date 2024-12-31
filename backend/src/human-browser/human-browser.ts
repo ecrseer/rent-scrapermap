@@ -11,17 +11,30 @@ export class HumanBrowser {
     return this;
   }
 
-  private async initializeBrowser(): Promise<puppeteer.Browser> {
-    return puppeteer.launch({
-      headless: false,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-web-security',
-        '--disable-features=IsolateOrigins,site-per-process',
-        '--window-size=1920,1080',
-      ],
-    });
+  private async initializeBrowser(mode?: 'headless' | 'non-headless'): Promise<puppeteer.Browser> {
+    if (mode === 'non-headless') {
+      return puppeteer.launch({
+        headless: false,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-web-security',
+          '--disable-features=IsolateOrigins,site-per-process',
+          '--window-size=1920,1080',
+        ],
+      });
+    } else {
+      return puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-web-security',
+          '--disable-features=IsolateOrigins,site-per-process',
+          '--window-size=1920,1080',
+        ],
+      });
+    }
   }
 
   private async setupPage(page: puppeteer.Page): Promise<void> {

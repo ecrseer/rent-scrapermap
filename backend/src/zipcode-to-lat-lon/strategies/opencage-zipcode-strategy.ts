@@ -1,21 +1,22 @@
 import axios from 'axios';
-import { IZipCodeToLatLong } from '../izipcode-to-lat-lon';
+import { IQueryAddress, IZipCodeToLatLong } from '../izipcode-to-lat-lon';
 
 export class OpenCageZipcodeStrategy implements IZipCodeToLatLong {
-  async cepToLatLng(zipCode: string, country = 'BR'): Promise<{ lat: number; lng: number }> {
-    console.log('🚀 ~ file: opencage-zipcode-strategy.ts:6 ~ zipCode:', zipCode);
+  async cepToLatLng(query: IQueryAddress): Promise<{ lat: number; lng: number }> {
+    console.log('🚀 ~ file: opencage-zipcode-strategy.ts:6 ~ zCode:', process.env.OPEN_CAGE_KEY);
+
     const params = {
-      q: `${zipCode}, Brazil`,
-      key: process.env.OPEN_CAGE_API_KEY,
-      limit: 1, // Get only the top result
+      q: query,
+      key: process.env.OPEN_CAGE_KEY,
+      limit: 5,
     };
     const response = await axios.get(`https://api.opencagedata.com/geocode/v1/json`, { params });
-    console.log('🚀 ~ file: opencage-zipcode-strategy.ts:13 ~ response:', response.config.url);
-    const data = response.data;
+    // console.log('🚀 ~ file: opencage-zipcode-strategy.ts:13 ~ response:', response.config.url);
+    const data = response.data.results;
     console.log('🚀 ~ file: opencage-zipcode-strategy.ts:8 ~ data:', data);
     return {
-      lat: data.results[0].geometry.lat,
-      lng: data.results[0].geometry.lng,
+      lat: data[0].geometry.lat,
+      lng: data[0].geometry.lng,
     };
   }
 }

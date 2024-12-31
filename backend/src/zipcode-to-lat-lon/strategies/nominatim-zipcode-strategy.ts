@@ -1,10 +1,14 @@
 import axios from 'axios';
-import { IZipCodeToLatLong } from '../izipcode-to-lat-lon';
+import { IQueryAddress, IZipCodeToLatLong } from '../izipcode-to-lat-lon';
 
 export class NominatimZipcodeStrategy implements IZipCodeToLatLong {
+  cepToLatLng(query: IQueryAddress): Promise<{ lat: number; lng: number }> {
+    throw new Error('Method not implemented.');
+  }
+
   private readonly baseUrl = 'https://nominatim.openstreetmap.org/search';
 
-  async cepToLatLng(zipCode: string, country = 'BR'): Promise<{ lat: number; lng: number }> {
+  async _cepToLatLng(zipCode: string, country = 'BR'): Promise<{ lat: number; lng: number }> {
     console.log('🚀 ~ file: nominatim-zipcode-strategy.ts:8 ~ zipCode:', zipCode);
     try {
       const response = await axios.get(this.baseUrl, {

@@ -4,6 +4,7 @@ import { Listing } from './types/listing';
 import { HumanBrowser } from './human-browser/human-browser';
 import { zipsListings } from './logs/sample';
 import { getZipToLatStrategy } from './zipcode-to-lat-lon/izipcode-to-lat-lon';
+import { fileWrite } from './utils/write-file';
 
 @Injectable()
 export class AppService {
@@ -11,6 +12,7 @@ export class AppService {
     LISTING_LINK: 'a[data-ds-component="DS-NewAdCard-Link"]',
     PRICE: '.ad__sc-q5xder-1 > div:nth-child(1) > span:nth-child(1)',
     ADDRESS: '.olx-color-neutral-110',
+    MAIN_ADDRESS: '.ad__sc-o5hdud-2 > div:nth-child(2) > span:nth-child(1)',
   };
 
   private readonly TIMEOUT = 4200;
@@ -21,9 +23,12 @@ export class AppService {
   async onModuleInit() {
     const scraped = zipsListings;
     const strategy = getZipToLatStrategy();
-    strategy.cepToLatLng(scraped[0].zipCode).then(res => {
-      console.log('🚀 ~ file: app.service.ts:26 ~ onModuleInit ~ res:', res);
-    });
+    this.scrapeListings();
+    // strategy
+    //   .cepToLatLng({ zipCode: scraped[0].zipCode, geoState: 'Rio de Janeiro', country: 'Brazil' })
+    //   .then(res => {
+    //     console.log('🚀 ~ file: app.service.ts:26 ~ onModuleInit ~ res:', res);
+    //   });
   }
 
   async scrapeListings(): Promise<Listing[]> {
@@ -63,7 +68,7 @@ export class AppService {
       human: null,
     };
     try {
-      for (const link of links.reverse()) {
+      for (const link of links.slice(0, 5)) {
         await this.randomDelay();
         webb.human = await new HumanBrowser().build();
 
@@ -78,6 +83,7 @@ export class AppService {
         console.log('🚀 ~ file: app.service.ts:73 ~ listing:', listing);
         if (listing.zipCode) {
           listings.push(listing);
+          fileWrite(listings);
         }
 
         await webb.human.browser.close();
@@ -92,17 +98,18 @@ export class AppService {
 
   private async extractListingDetails(page: puppeteer.Page, link: string): Promise<any> {
     try {
-      await this.randomDelay();
       await this.simulateHumanBehavior(page);
 
+      const mainAddress = await this.getElementText(page, this.SELECTORS.MAIN_ADDRESS);
       const address = await this.getElementText(page, this.SELECTORS.ADDRESS);
       console.log('🚀 ~ file: app.service.ts:94 ~ address:', address);
       const zipCode = address.replace(/\D/g, '');
       const rentVal = await this.getElementText(page, this.SELECTORS.PRICE);
-      return { zipCode, rentVal, link };
+      const zipCodeFormated = zipCode.replace(/(\d{5})(\d{3})/, '$1-$2');
+      return { zipCode: zipCodeFormated, rentVal, link, address: `${mainAddress}, ${address}` };
     } catch (err) {
       console.log('extractListingDetails ~ err:', err);
-      return { zipCode: '', rentVal: '', link };
+      return { zipCode: '', rentVal: '', link, address: '', zipCodeFormated: '' };
     }
   }
 
@@ -114,9 +121,8 @@ export class AppService {
   }
 
   private async simulateHumanBehavior(page: puppeteer.Page): Promise<void> {
-    // Random scroll
     await page.evaluate(() => {
-      const scrollHeight = Math.floor(Math.random() * 100);
+      const scrollHeight = Math.floor(Math.random() * 3100);
       window.scrollBy(0, scrollHeight);
     });
     await this.randomDelay();
@@ -133,19 +139,5 @@ export class AppService {
     await page.waitForSelector(selector, { timeout: this.TIMEOUT });
     const innerText = await page.$eval(selector, el => el.textContent?.trim() || '');
     return innerText;
-  }
-
-  private mapZipCode({ selectors }) {
-    // const price = document.querySelector(selectors.PRICE)?.textContent?.trim() || '';
-    const addressEl = document.querySelector(selectors.ADDRESS);
-    const addressText = addressEl?.textContent || '';
-    // console.log("🚀 ~ file: app.service.ts:91 ~ zipCode:", zipCode)
-    // const title = document.title || '';
-
-    return {
-      addressEl,
-      addressText,
-      link: window.location.href,
-    };
   }
 }
