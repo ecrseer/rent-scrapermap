@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import { Listing } from './types/listing';
-import { HumanBrowser } from './human-browser/human-browser';
-import { zipsListings } from './logs/sample';
-import { getZipToLatStrategy } from './zipcode-to-lat-lon/izipcode-to-lat-lon';
+import { HumanBrowser } from './real-estates/human-browser/human-browser';
+import { estatesSample } from './logs/estates-sample';
+
+import { getZipToLatStrategy } from './addresses/zipcode-to-lat-lon/izipcode-to-lat-lon';
 import { fileWrite } from './utils/write-file';
 
 @Injectable()
@@ -25,7 +26,7 @@ export class AppService {
   }
 
   async getMapZonaNorte() {
-    const scraped = zipsListings;
+    const scraped = estatesSample;
     const strategy = getZipToLatStrategy();
     const latlong = await strategy.cepToLatLng(
       `Rua Gonzaga de Campos, Todos os Santos, Rio de Janeiro, RJ, 20770140`,
