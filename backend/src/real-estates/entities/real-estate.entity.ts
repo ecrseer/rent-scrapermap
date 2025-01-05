@@ -17,6 +17,14 @@ export class RealEstate {
   @Column()
   address: string;
 
+  @Column({ nullable: true })
+  estatesPageIdFk: number;
+
+  @Column({ nullable: true })
+  latitude: number;
+  @Column({ nullable: true })
+  longitude: number;
+
   //   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   //   createdAt: Date;
 

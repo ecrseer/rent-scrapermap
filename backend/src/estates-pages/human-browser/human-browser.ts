@@ -3,6 +3,7 @@ import * as puppeteer from 'puppeteer';
 export class HumanBrowser {
   browser: puppeteer.Browser;
   page: puppeteer.Page;
+  sourceUrl = 'https://www.olx.com.br/imoveis/aluguel/estado-rj/rio-de-janeiro-e-regiao/zona-norte';
 
   public async build() {
     this.browser = await this.initializeBrowser();
@@ -51,13 +52,10 @@ export class HumanBrowser {
       Connection: 'keep-alive',
     });
 
-    await page.goto(
-      'https://www.olx.com.br/imoveis/aluguel/estado-rj/rio-de-janeiro-e-regiao/zona-norte',
-      {
-        waitUntil: 'networkidle0',
-        timeout: 30000,
-      },
-    );
+    await page.goto(this.sourceUrl, {
+      waitUntil: 'networkidle0',
+      timeout: 30000,
+    });
   }
 
   private async setupPage2Human() {

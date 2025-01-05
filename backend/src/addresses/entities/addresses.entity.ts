@@ -10,4 +10,10 @@ export class Addresses {
 
   @Column()
   address: string;
+
+  @Column()
+  latitude: number;
+
+  @Column()
+  longitude: number;
 }
