@@ -22,7 +22,7 @@ export class EstatesPagesService {
     LISTING_LINK: 'a[data-ds-component="DS-NewAdCard-Link"]',
   };
 
-  onModuleInit() {
+  ondModuleInit() {
     this.startScraping();
   }
 

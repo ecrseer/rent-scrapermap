@@ -11,9 +11,9 @@ export class Addresses {
   @Column()
   address: string;
 
-  @Column()
+  @Column({ type: 'float' })
   latitude: number;
 
-  @Column()
+  @Column({ type: 'float' })
   longitude: number;
 }

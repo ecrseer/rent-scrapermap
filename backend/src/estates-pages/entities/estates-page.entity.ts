@@ -24,4 +24,7 @@ export class EstatesPage {
 
   @Column()
   stepStatus: StepStatus;
+
+  @Column({ nullable: true })
+  stepScrappingRealEstatesLinkIndex: number;
 }

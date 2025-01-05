@@ -1,23 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { EstatesPagesService } from 'src/estates-pages/estates-pages.service';
+import { Module } from '@nestjs/common';
+import { MainFlowCronService } from './main-flow-cron.service';
+import { EstatesPagesModule } from 'src/estates-pages/estates-pages.module';
+import { RealEstatesModule } from 'src/real-estates/real-estates.module';
+import { AddressesModule } from 'src/addresses/addresses.module';
 
-export const TIMES = {
-  ONE_HOUR: '0 * * * *',
-  ONE_MINUTE: '* * * * *',
-};
-
-@Injectable()
-export class MainFlowCronService {
-  constructor(private readonly estatesPagesService: EstatesPagesService) {}
-
-  onModuleInit() {
-    this.scrapForHouses();
-  }
-
-  @Cron(TIMES.ONE_HOUR)
-  scrapForHouses() {
-    console.log('Checking estates-pages...');
-    // this.estatesPagesService.checkEstatesPages(); // Call your service method here
-  }
-}
+@Module({
+  providers: [MainFlowCronService],
+  imports: [AddressesModule, EstatesPagesModule, RealEstatesModule],
+  exports: [MainFlowCronService],
+})
+export class MainFlowCronModule {}

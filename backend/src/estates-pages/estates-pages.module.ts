@@ -4,11 +4,11 @@ import { EstatesPagesController } from './estates-pages.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EstatesPage } from './entities/estates-page.entity';
 import { RealEstatesModule } from 'src/real-estates/real-estates.module';
-import { MainFlowCronService } from 'src/main-flow-cron/main-flow-cron.module';
 
 @Module({
   controllers: [EstatesPagesController],
-  providers: [EstatesPagesService, MainFlowCronService],
+  providers: [EstatesPagesService],
   imports: [TypeOrmModule.forFeature([EstatesPage]), RealEstatesModule],
+  exports: [EstatesPagesService],
 })
 export class EstatesPagesModule {}

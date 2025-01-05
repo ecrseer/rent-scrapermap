@@ -29,4 +29,12 @@ export class RealEstatesService {
       },
     });
   }
+
+  async findAll(): Promise<RealEstate[]> {
+    return this.realEstateRepository.find();
+  }
+
+  async saveAll(houses: RealEstate[]) {
+    return this.realEstateRepository.save(houses);
+  }
 }

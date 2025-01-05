@@ -20,9 +20,9 @@ export class RealEstate {
   @Column({ nullable: true })
   estatesPageIdFk: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'float', nullable: true })
   latitude: number;
-  @Column({ nullable: true })
+  @Column({ type: 'float', nullable: true })
   longitude: number;
 
   //   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

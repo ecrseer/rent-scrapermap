@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Addresses } from './entities/addresses.entity';
 import { getZipToLatStrategy } from './zipcode-to-lat-lon/izipcode-to-lat-lon';
 import { RealEstate } from 'src/real-estates/entities/real-estate.entity';
+import { isObjectNotEmpty } from 'src/utils/misc';
 
 @Injectable()
 export class AddressesService {
@@ -25,7 +26,7 @@ export class AddressesService {
     const scraped = realEstates;
     for (const estate of scraped) {
       const cached = this.findByZipCode(estate.address);
-      if (cached) {
+      if (isObjectNotEmpty(cached)) {
         estate.latitude = cached.latitude;
         estate.longitude = cached.longitude;
         continue;

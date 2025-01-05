@@ -32,9 +32,9 @@ const listings = ref<Listing[]>([])
 
 const fetchListings = async () => {
   try {
-    const response = await axios.get('http://localhost:4242/api/zona-norte')
-    listings.value = response.data as Listing[]
+    const response = await axios.get('http://localhost:4242/real-estates/')
     console.log("🚀 ~ file: index.vue:37 ~ response.data:", response.data)
+    listings.value = response.data as Listing[]
 
     // Add markers for each listing with ZIP code
     clearMarkers()

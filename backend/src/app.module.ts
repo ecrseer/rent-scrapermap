@@ -8,19 +8,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AddressesModule } from './addresses/addresses.module';
 import { EstatesPagesModule } from './estates-pages/estates-pages.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { MainFlowCronService } from './main-flow-cron/main-flow-cron.module';
+import { MainFlowCronModule } from './main-flow-cron/main-flow-cron.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: '.env',
     }),
-    ScheduleModule.forRoot(),
-
     TypeOrmModule.forRoot(AppDataSource.options),
+
     RealEstatesModule,
     AddressesModule,
     EstatesPagesModule,
+
+    ScheduleModule.forRoot(),
+    MainFlowCronModule,
   ],
   controllers: [AppController],
   providers: [AppService],
